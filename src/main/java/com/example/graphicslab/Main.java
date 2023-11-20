@@ -68,5 +68,13 @@ public class Main extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // a)
+        // Оригинальный порядок: (0, 0) до (8, 3)
+        drawingUtils.drawLine(0, 0, 8, 3, RGBPIXEL.BLACK);
+        //
+        //// Обмен порядком: (8, 3) до (0, 0)
+        drawingUtils.drawLine(8, 3, 0, 0, RGBPIXEL.RED);
+
     }
 }

@@ -23,45 +23,100 @@ public class DrawingUtils {
         setPixel(p.x, p.y, color);
     }
 
-    public void drawLine(int x0, int y0, int x1, int y1, RGBPIXEL color) {
-        if (x0 > x1) {
-            int temp = x0;
-            x0 = x1;
-            x1 = temp;
+    /**
+     * Рисует отрезок на канве от точки (x1, y1) до точки (x2, y2).
+     *
+     * @param x1    Координата x начальной точки
+     * @param y1    Координата y начальной точки
+     * @param x2    Координата x конечной точки
+     * @param y2    Координата y конечной точки
+     * @param color Цвет отрезка
+     */
+    void drawLine(int x1, int y1, int x2, int y2, RGBPIXEL color) {
+        int x = x1, y = y1; // Текущее значение точки, инициализируем координатами начальной точки
+        int dx = x2 - x1, dy = y2 - y1;
+        int ix, iy; // Величина приращений (-1, 0, 1) по координатам определяют направление движения
+        int e; // Ошибка
+        int i; // Счетчик цикла
 
-            temp = y0;
-            y0 = y1;
-            y1 = temp;
-        }
+        // Определение величины приращения по координатам, а также получение абсолютных значений dx, dy
+        if (dx > 0) ix = 1;
+        else if (dx < 0) {
+            ix = -1;
+            dx = -dx;
+        } else ix = 0;
 
-        int dx = x1 - x0;
-        int dy = y1 - y0;
-        int sx = (dx > 0) ? 1 : -1;
-        int sy = (dy > 0) ? 1 : -1;
-        dx = Math.abs(dx);
-        dy = Math.abs(dy);
-        int err = dx - dy;
-        int e2;
+        if (dy > 0) iy = 1;
+        else if (dy < 0) {
+            iy = -1;
+            dy = -dy;
+        } else iy = 0;
 
-        while (true) {
-            setPixel(x0, y0, color);
+        if (dx >= dy) {
+            e = 2 * dy - dx; // Инициализация ошибки с поправкой на половину пиксела
 
-            if (x0 == x1 && y0 == y1)
-                break;
+            if (iy >= 0) { // Увеличиваем или не изменяем y
+                // Основной цикл
+                for (i = 0; i <= dx; i++) {
+                    setPixel(x, y, color); // Выводим точку
 
-            e2 = 2 * err;
+                    if (e >= 0) {
+                        // Ошибка стала неотрицательной
+                        y += iy; // Изменяем y
+                        e -= 2 * dx; // Уменьшаем ошибку
+                    }
 
-            if (e2 > -dy) {
-                err -= dy;
-                x0 += sx;
+                    x += ix; // Всегда изменяем x
+                    e += dy * 2; // И увеличиваем ошибку
+                }
+            } else { // y уменьшается
+                for (i = 0; i <= dx; i++) {
+                    setPixel(x, y, color);
+
+                    if (e > 0) {
+                        // Ошибка стала положительной. Условие изменилось с >= на >
+                        y += iy;
+                        e -= 2 * dx;
+                    }
+
+                    x += ix;
+                    e += dy * 2;
+                }
             }
+        } else { // dy > dx
+            e = 2 * dx - dy; // Инициализация ошибки с поправкой на половину пиксела
 
-            if (e2 < dx) {
-                err += dx;
-                y0 += sy;
+            if (ix >= 0) { // Увеличиваем или не изменяем x
+                // Основной цикл
+                for (i = 0; i <= dy; i++) {
+                    setPixel(x, y, color);
+
+                    if (e >= 0) {
+                        // Ошибка стала неотрицательной
+                        x += ix;
+                        e -= 2 * dy;
+                    }
+
+                    y += iy;
+                    e += dx * 2;
+                }
+            } else { // x уменьшается
+                for (i = 0; i <= dy; i++) {
+                    setPixel(x, y, color);
+
+                    if (e > 0) {
+                        // Ошибка стала положительной. Условие изменилось с >= на >
+                        x += ix;
+                        e -= 2 * dy;
+                    }
+
+                    y += iy;
+                    e += dx * 2;
+                }
             }
         }
     }
+
 
     public void drawLine(Point a, Point b, RGBPIXEL color) {
         drawLine(a.x, a.y, b.x, b.y, color);
