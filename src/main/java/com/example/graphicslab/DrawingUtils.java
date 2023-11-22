@@ -3,8 +3,12 @@ package com.example.graphicslab;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import static com.example.graphicslab.MathUtils.bernstein;
+import static com.example.graphicslab.MathUtils.calcFactorial;
 
 public class DrawingUtils {
 
@@ -265,5 +269,98 @@ public class DrawingUtils {
                 }
             }
         }
+    }
+
+    // Функция для отрисовки кривой Безье
+    public void bezierCurve(List<Point> points, RGBPIXEL color) {
+        int n = points.size();
+
+        for (double t = 0; t <= 1; t += 0.001) {
+            double x = 0;
+            double y = 0;
+            for (int i = 0; i < n; i++) {
+                x += points.get(i).x * bernstein(n - 1, i, t);
+                y += points.get(i).y * bernstein(n - 1, i, t);
+            }
+            setPixel((int) x, (int) y, color);
+        }
+    }
+
+    // Функция для вычисления площади параллелограмма
+    private static int area(Point v1, Point v2) {
+        return v1.x * v2.y - v1.y * v2.x;
+    }
+
+    // Функция для инвертирования порядка точек в полигоне
+    private static void reverse(List<Point> list) {
+        Collections.reverse(list);
+    }
+
+    // Функция для нахождения точки пересечения двух отрезков
+    private static Point intersection(Point a1, Point a2, Point b1, Point b2) {
+        // Находим вектора отрезков
+        Point a = a2.subtract(a1);
+        Point b = b2.subtract(b1);
+
+        // Проверяем, параллельны ли отрезки
+        if (area(a, b) == 0) {
+            // Отрезки параллельны или совпадают, возвращаем первую точку первого отрезка
+            return a1;
+        }
+
+        // Вычисляем координаты точки пересечения
+        double x = (double) ((a1.x * a2.y - a1.y * a2.x) * (b1.x - b2.x) - (a1.x - a2.x) * (b1.x * b2.y - b1.y * b2.x))
+                / ((a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x));
+
+        double y = (double) ((a1.x * a2.y - a1.y * a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x * b2.y - b1.y * b2.x))
+                / ((a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x));
+
+        return new Point((int) x, (int) y);
+    }
+
+    // Функция для алгоритма отсечения
+    public void cuttingAlgorithmSB(List<Point> polygon, Point start, Point end, RGBPIXEL color) {
+        double t1 = 0, t2 = 1;
+        Point l = end.subtract(start);
+        int n = polygon.size();
+
+        if (area(polygon.get(1).subtract(polygon.get(0)), polygon.get(2).subtract(polygon.get(1))) < 0) {
+            reverse(polygon);
+        }
+
+        for (int i = 0; i < n - 1; i++) {
+            Point ans = intersection(polygon.get(i), polygon.get(i + 1), start, end);
+
+            Point curVec = polygon.get(i + 1).subtract(polygon.get(i));
+            Point norm = new Point(-curVec.y, curVec.x);
+
+            double t = ((double) ans.x - (double) start.x) / l.x;
+            if (t < 0 || t > 1) continue;
+
+            if (l.dotProduct(norm) > 0) {
+                t1 = Math.max(t1, t);
+            } else {
+                t2 = Math.min(t2, t);
+            }
+        }
+        Point ans = intersection(polygon.get(n - 1), polygon.get(0), start, end);
+
+        Point curVec = polygon.get(0).subtract(polygon.get(n - 1));
+        Point norm = new Point(-curVec.y, curVec.x);
+        double t = ((double) ans.x - (double) start.x) / l.x;
+        if (t >= 0 && t <= 1) {
+            if (l.dotProduct(norm) > 0) {
+                t1 = Math.max(t1, t);
+            } else {
+                t2 = Math.min(t2, t);
+            }
+        }
+
+        if (t2 < t1) return;
+
+        Point p3 = new Point((int) Math.round(start.x + l.x * t1), (int) Math.round(start.y + l.y * t1));
+        Point p4 = new Point((int) Math.round(start.x + l.x * t2), (int) Math.round(start.y + l.y * t2));
+
+        drawLine(p3.x, p3.y, p4.x, p4.y, color);
     }
 }
