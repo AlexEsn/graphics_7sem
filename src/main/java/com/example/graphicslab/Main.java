@@ -6,12 +6,12 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Main extends Application {
+
+    private static int WIDTH = 800;
+    private static int HEIGHT = 800;
 
     public static void main(String[] args) {
         launch(args);
@@ -22,9 +22,9 @@ public class Main extends Application {
         primaryStage.setTitle("Графическая лаборатория");
 
         // Создаем холст
-        Canvas canvas = new Canvas(800, 800);
+        Canvas canvas = new Canvas(WIDTH, HEIGHT);
         StackPane layout = new StackPane(canvas);
-        Scene scene = new Scene(layout, 800, 800);
+        Scene scene = new Scene(layout, WIDTH, HEIGHT);
 
         // Настраиваем контекст графики
         DrawingUtils drawingUtils = new DrawingUtils(canvas.getGraphicsContext2D());
@@ -76,55 +76,77 @@ public class Main extends Application {
 //        drawingUtils.drawLine(8, 3, 0, 0, RGBPIXEL.RED);
         // -------------------------------------------------------- Lab2 ------------------------------------------------------------
         // Пример 8: Рисуем кривую Безье 2-го порядка
-        drawingUtils.bezierCurve(List.of(new Point(50, 100), new Point(150, 200), new Point(250, 100)), RGBPIXEL.BLUE);
+//        drawingUtils.bezierCurve(List.of(new Point(50, 100), new Point(150, 200), new Point(250, 100)), RGBPIXEL.BLUE);
 
         //Пример 9: Рисуем кубическую кривую Безье
-        drawingUtils.bezierCurve(List.of(new Point(50, 100), new Point(150, 200), new Point(200, 50), new Point(300, 100)), RGBPIXEL.GREEN);
+//        drawingUtils.bezierCurve(List.of(new Point(50, 100), new Point(150, 200), new Point(200, 50), new Point(300, 100)), RGBPIXEL.GREEN);
 
         //Пример 10: Рисуем кривую Безье 4-го порядка
-        drawingUtils.bezierCurve(List.of(new Point(50, 100), new Point(100, 200), new Point(200, 50), new Point(300, 200), new Point(400, 100)), RGBPIXEL.RED);
+//        drawingUtils.bezierCurve(List.of(new Point(50, 100), new Point(100, 200), new Point(200, 50), new Point(300, 200), new Point(400, 100)), RGBPIXEL.RED);
 
         // Пример 11: Отрисовываем отрезок с отсечением
-        List<Point> rectangle = Arrays.asList(new Point(200, 200), new Point(300, 350), new Point(500, 300), new Point(400, 150));
+//        List<Point> rectangle = Arrays.asList(new Point(200, 200), new Point(300, 350), new Point(500, 300), new Point(400, 150));
 
-        drawingUtils.drawPoligon(rectangle, RGBPIXEL.RED);
+//        drawingUtils.drawPoligon(rectangle, RGBPIXEL.RED);
 
         // пересекает полигон
-        Point start_1 = new Point(50, 300);
-        Point end_1 = new Point(550, 280);
+//        Point start_1 = new Point(50, 300);
+//        Point end_1 = new Point(550, 280);
 
-        drawingUtils.drawLine(start_1, end_1, RGBPIXEL.GREEN);
-        drawingUtils.cuttingAlgorithmSB(
-                rectangle,
-                start_1,
-                end_1,
-                RGBPIXEL.BLUE
-        );
+//        drawingUtils.drawLine(start_1, end_1, RGBPIXEL.GREEN);
+//        drawingUtils.cuttingAlgorithmSB(
+//                rectangle,
+//                start_1,
+//                end_1,
+//                RGBPIXEL.BLUE
+//        );
 
         // внутри полигона
-        Point start_2 = new Point(260, 190);
-        Point end_2 =  new Point(450, 250);
+//        Point start_2 = new Point(260, 190);
+//        Point end_2 =  new Point(450, 250);
 
-        drawingUtils.drawLine(start_2, end_2, RGBPIXEL.GREEN);
-        drawingUtils.cuttingAlgorithmSB(
-                rectangle,
-                start_2,
-                end_2,
-                RGBPIXEL.BLUE
-        );
+//        drawingUtils.drawLine(start_2, end_2, RGBPIXEL.GREEN);
+//        drawingUtils.cuttingAlgorithmSB(
+//                rectangle,
+//                start_2,
+//                end_2,
+//                RGBPIXEL.BLUE
+//        );
 
         // вне полигона
-        Point start_3 = new Point(50, 350);
-        Point end_3 = new Point(350, 400);
+//        Point start_3 = new Point(50, 350);
+//        Point end_3 = new Point(350, 400);
 
-        drawingUtils.drawLine(start_3, end_3, RGBPIXEL.GREEN);
-        drawingUtils.cuttingAlgorithmSB(
-                rectangle,
-                start_3,
-                end_3,
-                RGBPIXEL.BLUE
+//        drawingUtils.drawLine(start_3, end_3, RGBPIXEL.GREEN);
+//        drawingUtils.cuttingAlgorithmSB(
+//                rectangle,
+//                start_3,
+//                end_3,
+//                RGBPIXEL.BLUE
+//        );
+
+        // -------------------------------------------------------- BDZ ------------------------------------------------------------
+        // Пример 12: Рисуем дугу окружности с использованием кривых Безье
+        Point center = new Point(WIDTH / 2, HEIGHT / 2);
+        int radius = 100;
+        double startAngle = Math.toRadians(0);
+        double endAngle = Math.toRadians(180);
+
+        drawingUtils.drawCircleWithBezier(center, radius, startAngle, endAngle, RGBPIXEL.BLACK);
+
+        // Пример использования findExternalContour
+        List<Point> originalPolygon =  List.of(
+                new Point(400, 400),
+                new Point(600, 600),
+                new Point(200, 500),
+                new Point(600, 500),
+                new Point(200, 600)
         );
 
+        List<Point> externalContour = drawingUtils.findExternalContour(originalPolygon);
+
+        drawingUtils.drawPoligon(originalPolygon, RGBPIXEL.RED);
+        drawingUtils.drawPoligon(externalContour, RGBPIXEL.BLUE);
 
         primaryStage.setScene(scene);
         primaryStage.show();
