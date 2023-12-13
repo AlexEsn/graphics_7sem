@@ -1,24 +1,45 @@
 package com.example.graphicslab;
 
+import com.madgag.gif.fmsware.AnimatedGifEncoder;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
-import java.util.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.TreeMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class Main extends Application {
 
     private static int WIDTH = 800;
     private static int HEIGHT = 800;
 
+    private AnimatedGifEncoder gifEncoder;
+
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws IOException, InterruptedException {
         primaryStage.setTitle("Графическая лаборатория");
 
         // Создаем холст
@@ -27,7 +48,9 @@ public class Main extends Application {
         Scene scene = new Scene(layout, WIDTH, HEIGHT);
 
         // Настраиваем контекст графики
-        DrawingUtils drawingUtils = new DrawingUtils(canvas.getGraphicsContext2D());
+        DrawingUtils drawingUtils = new DrawingUtils(canvas.getGraphicsContext2D(), canvas);
+
+        DrawingUtils3D drawingUtils3D = new DrawingUtils3D(drawingUtils);
 
         // -------------------------------------------------------------- Lab1 ----------------------------------------------
         // Пример 1: Рисуем линию
@@ -127,28 +150,73 @@ public class Main extends Application {
 
         // -------------------------------------------------------- BDZ ------------------------------------------------------------
         // Пример 12: Рисуем дугу окружности с использованием кривых Безье
-        Point center = new Point(WIDTH / 2, HEIGHT / 2);
-        int radius = 100;
-        double startAngle = Math.toRadians(0);
-        double endAngle = Math.toRadians(180);
+//        Point center = new Point(WIDTH / 2, HEIGHT / 2);
+//        int radius = 100;
+//        double startAngle = Math.toRadians(0);
+//        double endAngle = Math.toRadians(180);
 
-        drawingUtils.drawCircleWithBezier(center, radius, startAngle, endAngle, RGBPIXEL.BLACK);
+//        drawingUtils.drawCircleWithBezier(center, radius, startAngle, endAngle, RGBPIXEL.BLACK);
 
         // Пример использования findExternalContour
-        List<Point> originalPolygon =  List.of(
-                new Point(400, 400),
-                new Point(600, 600),
-                new Point(200, 500),
-                new Point(600, 500),
-                new Point(200, 600)
-        );
+//        List<Point> originalPolygon =  List.of(
+//                new Point(400, 400),
+//                new Point(600, 600),
+//                new Point(200, 500),
+//                new Point(600, 500),
+//                new Point(200, 600)
+//        );
 
-        List<Point> externalContour = drawingUtils.findExternalContour(originalPolygon);
+//        List<Point> externalContour = drawingUtils.findExternalContour(originalPolygon);
 
-        drawingUtils.drawPoligon(originalPolygon, RGBPIXEL.RED);
-        drawingUtils.drawPoligon(externalContour, RGBPIXEL.BLUE);
+//        drawingUtils.drawPoligon(originalPolygon, RGBPIXEL.RED);
+//        drawingUtils.drawPoligon(externalContour, RGBPIXEL.BLUE);
+
+        // -------------------------------------------------------- Lab3 ------------------------------------------------------------
+        // Пример 13: Построения параллельной проекции повернутого параллелепипеда на плоскость Z=0.
+        Parallelepiped parallelepiped = drawingUtils3D.createParallelepiped(new Point3D(200, 200, 100), 100, 100, 100);
+        drawingUtils3D.rotate(parallelepiped, Math.PI / 8, parallelepiped.getCenter());
+//        drawingUtils3D.drawAllBounds(parallelepiped, RGBPIXEL.GREEN);
+
+        // Пример 14: Построения одноточечной перспективной проекции повернутого параллелепипеда.
+        drawingUtils3D.drawOnePointProjection(parallelepiped, 0.01, RGBPIXEL.RED);
+
+        // Пример 15: Удаления невидимых ребер "проволочной" модели параллелепипеда.
+//        drawingUtils3D.drawWithoutVisibleEdges(parallelepiped, RGBPIXEL.BLACK);
+
+        // Пример 16: Анимация вращения куба
+
+        // Настройка AnimatedGifEncoder
+//        gifEncoder = new AnimatedGifEncoder();
+//        gifEncoder.start(Files.newOutputStream(Paths.get("animation.gif")));
+//        gifEncoder.setRepeat(0);  // 0 - бесконечно повторять анимацию
+
+        // Создаем Timeline для анимации
+//        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(100), event -> {
+//            drawingUtils.getGc().setFill(javafx.scene.paint.Color.WHITE);
+//            drawingUtils.getGc().fillRect(0, 0, drawingUtils.getCanvas().getWidth(), drawingUtils.getCanvas().getHeight());
+//
+//            drawingUtils3D.rotate(parallelepiped, Math.PI / 100, parallelepiped.getCenter());
+//            drawingUtils3D.drawAllBounds(parallelepiped, RGBPIXEL.BLUE);
+//
+//            WritableImage snapshot = drawingUtils.getCanvas().snapshot(null, null);
+//
+//            BufferedImage image = SwingFXUtils.fromFXImage(snapshot, null);
+//
+//            gifEncoder.addFrame(image);
+//        }));
+//
+//        timeline.setCycleCount(20); // Количество повторений
+//        timeline.play();
 
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        gifEncoder.finish();
+    }
+
+
 }

@@ -36,7 +36,7 @@ public class Point {
         return new Point(v1.x - v2.x, v1.y - v2.y);
     }
 
-    private static int area(Point v1, Point v2) {
+    public static int area(Point v1, Point v2) {
         return v1.x * v2.y - v1.y * v2.x;
     }
 
